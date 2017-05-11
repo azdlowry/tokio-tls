@@ -86,6 +86,14 @@ pub trait TlsConnectorExt {
     /// properly.
     fn connect_async<S>(&self, domain: &str, stream: S) -> ConnectAsync<S>
         where S: Read + Write; // TODO: change to AsyncRead + AsyncWrite
+
+    /// Same as `connect_async`, but *without* certificate verification.
+    ///
+    /// # Warning
+    ///
+    /// Be careful when you use this method.
+    fn danger_connect_async_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(&self, stream: S) -> ConnectAsync<S>
+        where S: Read + Write; // TODO: change to AsyncRead + AsyncWrite
 }
 
 /// Extension trait for the `TlsAcceptor` type in the `native_tls` crate.
@@ -162,6 +170,16 @@ impl TlsConnectorExt for TlsConnector {
         ConnectAsync {
             inner: MidHandshake {
                 inner: Some(self.connect(domain, stream)),
+            },
+        }
+    }
+
+    fn danger_connect_async_without_providing_domain_for_certificate_verification_and_server_name_indication<S>(&self, stream: S) -> ConnectAsync<S>
+        where S: Read + Write
+    {
+        ConnectAsync {
+            inner: MidHandshake {
+                inner: Some(self.danger_connect_without_providing_domain_for_certificate_verification_and_server_name_indication(stream)),
             },
         }
     }
